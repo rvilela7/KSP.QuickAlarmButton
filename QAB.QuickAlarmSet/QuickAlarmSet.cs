@@ -7,7 +7,10 @@ using UnityEngine;
 
 namespace QAB.QuickAlarmSet
 {
+    [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class QuickAlarmSet : MonoBehaviour
     {
+        AlarmTB alarm = new AlarmTB();
+
     }
 }
