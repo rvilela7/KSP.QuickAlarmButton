@@ -59,6 +59,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlarmTB.cs" />
     <Compile Include="QuickAlarmSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

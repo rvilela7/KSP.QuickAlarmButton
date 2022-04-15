@@ -7,7 +7,7 @@ namespace QAB.QuickAlarmSet
     {
         [AppUI_InputDateTime(guiName = "Alarm Date", datetimeMode = AppUIMemberDateTime.DateTimeModes.date)]
         public double alarmDate;
-        public Alarm()
+        public AlarmTB()
         {
             // iconURL = "TriggerTech/TestMod/AlarmIcons/RvTest";
         }
@@ -27,8 +27,8 @@ namespace QAB.QuickAlarmSet
             {
                 alarmDate = Planetarium.GetUniversalTime() + 600;
             }
-            AppUIMemberDateTime m = (AppUIMemberDateTime)uiPanel.GetControl("alarmDate");
-            m.DatetimeMode = AppUIMemberDateTime.DateTimeModes.date;
+            // AppUIMemberDateTime m = (AppUIMemberDateTime)uiPanel.GetControl("alarmDate");
+            // m.DatetimeMode = AppUIMemberDateTime.DateTimeModes.date;
         }
 
         public override void OnInputPanelUpdate(AlarmUIDisplayMode displayMode)
