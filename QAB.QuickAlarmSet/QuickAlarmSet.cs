@@ -1,13 +1,17 @@
-﻿using KSP.UI.Screens;
+﻿using FinePrint;
+using KSP.UI.Screens;
+using System;
 using UnityEngine;
 
-namespace YourModNamespace
+namespace WaypointAlarmMod
 {
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
     public class WaypointAlarmModule : MonoBehaviour
     {
         private static ApplicationLauncherButton toolbarButton;
         private static Waypoint currentWaypoint;
+
+        private const string ButtonImage1 = "QAB/Textures/AddAlarmBt.png";
 
         private void Start()
         {
@@ -19,7 +23,7 @@ namespace YourModNamespace
         {
             if (ApplicationLauncher.Ready)
             {
-                Texture2D buttonTexture = GameDatabase.Instance.GetTexture("QAB/Textures/ToolbarIcon", false);
+                Texture2D buttonTexture = GameDatabase.Instance.GetTexture(ButtonImage1, false);
                 toolbarButton = ApplicationLauncher.Instance.AddModApplication(
                     OnToolbarButtonToggleOn,
                     OnToolbarButtonToggleOff,
@@ -42,13 +46,16 @@ namespace YourModNamespace
 
         private void OnToolbarButtonToggleOn()
         {
-            currentWaypoint = FlightGlobals.ActiveVessel?.targetObject as Waypoint;
-            if (currentWaypoint != null)
+            if (FlightGlobals.ActiveVessel != null)
             {
-                // Calculate the time until the waypoint and add an alarm notification
-                double timeToWaypoint = currentWaypoint.UT - Planetarium.GetUniversalTime();
-                AlarmClockScenario.AddAlarm(
-                    new KACWrapper.KACAPI.AlarmObject(FlightGlobals.ActiveVessel.vesselName, timeToWaypoint, "Waypoint Alarm"));
+                CelestialBody currentBody = FlightGlobals.ActiveVessel.mainBody;
+                Vector3d vesselPosition = FlightGlobals.ActiveVessel.GetWorldPos3D();
+                Vector3d waypointPosition = currentWaypoint.celestialBody.GetWorldSurfacePosition(
+                    currentWaypoint.latitude, currentWaypoint.longitude, currentWaypoint.altitude);
+
+                // Calculate the time until the vessel reaches the waypoint
+                double timeToWaypoint = CalculateTimeToWaypoint(currentBody, vesselPosition, waypointPosition);
+                StartCoroutine(SetWaypointAlarm(timeToWaypoint));
             }
         }
 
@@ -57,8 +64,33 @@ namespace YourModNamespace
             // Remove the notification for the current waypoint
             if (currentWaypoint != null)
             {
-                AlarmClockScenario.DeleteAlarm(currentWaypoint.UT, FlightGlobals.ActiveVessel.vesselName);
+                // Implement alarm removal logic here
             }
+        }
+
+        private System.Collections.IEnumerator SetWaypointAlarm(double timeToWaypoint)
+        {
+            yield return new WaitForSeconds((float)timeToWaypoint);
+
+            // Implement alarm notification logic here
+            Debug.Log("Alarm triggered for waypoint!");
+        }
+
+        private double CalculateTimeToWaypoint(CelestialBody body, Vector3d vesselPosition, Vector3d waypointPosition)
+        {
+            // Get the semimajor axis of the vessel's orbit (assuming a circular orbit)
+            double semiMajorAxis = vesselPosition.magnitude;
+
+            // Calculate the velocity of the vessel in the circular orbit
+            double orbitalVelocity = Math.Sqrt(body.gravParameter / semiMajorAxis);
+
+            // Calculate the distance between the vessel and the waypoint
+            double distanceToWaypoint = Vector3d.Distance(vesselPosition, waypointPosition);
+
+            // Calculate the time it takes for the vessel to cover the distance to the waypoint
+            double timeToWaypoint = distanceToWaypoint / orbitalVelocity;
+
+            return timeToWaypoint;
         }
     }
 }
